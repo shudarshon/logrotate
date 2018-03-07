@@ -1,0 +1,19 @@
+$TOMCAT_HOME/logs/catalina*.* {
+
+copytruncate
+daily
+rotate 3
+compress
+notifempty
+missingok
+size 10M
+dateext
+dateformat -%Y-%m-%d-%s
+#lastaction
+#        HOSTNAME=`hostname`
+#        aws s3 cp /var/log/nginx/access.*.gz s3://$BUCKET_NAME/$HOSTNAME/
+#        aws s3 cp /var/log/nginx/error.*.gz s3://$BUCKET_NAME/$HOSTNAME/
+#         rm $TOMCAT_HOME/logs/catalina*.gz
+#endscript
+
+}
