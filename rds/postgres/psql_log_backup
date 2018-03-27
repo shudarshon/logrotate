@@ -1,0 +1,12 @@
+#!/bin/bash
+INSTANCE=psql-db
+mkdir -p ${INSTANCE} && cd ${INSTANCE}
+for i in `aws rds describe-db-log-files --db-instance-identifier ${INSTANCE} --output text | awk '{print $3}' | sed '$d' | tail -n 3` ; do
+	FILE=`basename ${i}`
+	if [ ! -e ${FILE}.tar.gz ]; then
+		echo "Downloading ${i} ........."
+		aws rds download-db-log-file-portion --db-instance-identifier ${INSTANCE} --log-file-name ${i} --starting-token 0 --output text > ${FILE}
+		tar -cvzf ${FILE}.tar.gz ${FILE}
+		rm ${FILE}
+	fi
+done
