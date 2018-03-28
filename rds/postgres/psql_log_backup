@@ -3,20 +3,27 @@
 ##
 #	Bash script to download Postgres SQL log from RDS and upload to S3 bucket
 ##
+#	Make sure that you have selected appropriate S3 and RDS IAM role for aws cli user
+##
 
-INSTANCE=rds-db-identifier
+INSTANCE='rds-db-identifier'
 mkdir -p ${INSTANCE} && cd ${INSTANCE}
-for i in `aws rds describe-db-log-files --db-instance-identifier ${INSTANCE} --output text | awk '{print $3}' | sed '$d' | tail -n 3` ; do
+for i in `aws rds describe-db-log-files --db-instance-identifier ${INSTANCE} --output text | awk '{print $3}' | sed '$d' | tail -n 10` ; do
 	FILE=`basename ${i}`
 	ARCHIVE=${FILE}.tar.gz
-	BUCKET='backup-db-log'
+	BUCKET='backup-db-log-bucket'
 	if [ ! -e ${ARCHIVE} ]; then
 		echo "Downloading ${i} ........."
-		aws rds download-db-log-file-portion --db-instance-identifier ${INSTANCE} --log-file-name ${i} --starting-token 0 --output text > ${FILE}
+		`which aws` rds download-db-log-file-portion --db-instance-identifier ${INSTANCE} --log-file-name ${i} --starting-token 0 --output text > ${FILE}
 		tar -cvzf ${ARCHIVE} ${FILE}
 		echo "Uploading to S3 bucket ........"
-		aws s3 mv ${ARCHIVE} s3://${BUCKET}
+		aws s3 mv ${ARCHIVE} s3://${BUCKET}/
 		rm ${FILE}
 	fi
 done
 
+##
+#	Additionally you can run a cronjob every 45 minutes to upload db log to S3
+##
+#	*/45 * * * * /home/ubuntu/.crontasks/script >/dev/null 2>&1
+##
