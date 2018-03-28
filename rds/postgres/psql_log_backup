@@ -1,4 +1,5 @@
 #!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/home/ubuntu
 
 ##
 #	Bash script to download Postgres SQL log from RDS and upload to S3 bucket
@@ -7,11 +8,12 @@
 ##
 
 INSTANCE='rds-db-identifier'
+BUCKET='backup-db-log-bucket'
+
 mkdir -p ${INSTANCE} && cd ${INSTANCE}
 for i in `aws rds describe-db-log-files --db-instance-identifier ${INSTANCE} --output text | awk '{print $3}' | sed '$d' | tail -n 10` ; do
 	FILE=`basename ${i}`
 	ARCHIVE=${FILE}.tar.gz
-	BUCKET='backup-db-log-bucket'
 	if [ ! -e ${ARCHIVE} ]; then
 		echo "Downloading ${i} ........."
 		`which aws` rds download-db-log-file-portion --db-instance-identifier ${INSTANCE} --log-file-name ${i} --starting-token 0 --output text > ${FILE}
@@ -25,5 +27,5 @@ done
 ##
 #	Additionally you can run a cronjob every 45 minutes to upload db log to S3
 ##
-#	*/45 * * * * /home/ubuntu/.crontasks/script >/dev/null 2>&1
+#	*/45 * * * * /bin/bash /home/ubuntu/.crontasks/script >/dev/null 2>&1
 ##
