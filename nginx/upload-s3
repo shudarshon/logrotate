@@ -1,0 +1,16 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+##
+#	Bash script to upload rotated nginx log from filesystem to S3 bucket
+##
+#	Make sure that you have selected appropriate S3 IAM role for aws cli user
+##
+
+BUCKET='webserver-log'
+LOG_DIR='/var/log/nginx'
+for i in `ls -l ${LOG_DIR}/*.gz | awk {'print $NF'}` ; do
+	ARCHIVE=${i}
+	echo "Uploading to S3 bucket ........"
+	sudo `which aws` s3 mv ${ARCHIVE} s3://${BUCKET}/
+done

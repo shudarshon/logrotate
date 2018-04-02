@@ -1,0 +1,19 @@
+/var/log/nginx/*.log {
+	daily
+	missingok
+	rotate 1
+  size 1M
+	compress
+	notifempty
+	create 0640 www-data adm
+	sharedscripts
+	postrotate
+		invoke-rc.d nginx rotate >/dev/null 2>&1
+	endscript
+  dateext
+  dateformat -%Y-%m-%d-%s
+  lastaction
+      /bin/bash /usr/bin/upload-s3 >/dev/null 2>&1
+      rm -f *.log.1
+  endscript
+}
